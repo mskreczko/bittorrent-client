@@ -34,7 +34,19 @@ func TestNegativeIntegerParser(t *testing.T) {
   }
 }
 
+func TestEmptyListParser(t *testing.T) {
+
+}
+
 func TestListParser(t *testing.T) {
+  var res []interface{}
+  res = append(res, "bencode")
+  res = append(res, -20)
+  result, _ := parseList("l7:bencodei-20ee", 0)
+
+  if result[0] != res[0] || result[1] != res[1] {
+    t.Fatalf("Does not work :(, %#v", res)
+  }
 }
 
 func TestDictionaryParser(t *testing.T) {

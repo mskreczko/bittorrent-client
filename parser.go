@@ -3,6 +3,7 @@ package main
 import (
   "regexp"
   "strconv"
+  "fmt"
 )
 
 type BitTorrentV2 struct {
@@ -12,8 +13,11 @@ type BitTorrentV2 struct {
 }
 
 func parseString(input string, pos int) (string, int) {
+  fmt.Println(input)
+  fmt.Println(pos)
   r, _ := regexp.Compile("[0-9]+:[a-zA-z]")
   length_str := r.FindString(input[pos:])
+  fmt.Println(length_str)
   length, _ := strconv.Atoi(length_str[:len(length_str)-2])
 
   return input[pos + len(length_str) - 1:pos + len(length_str) - 1 + length], length
@@ -26,30 +30,49 @@ func parseInteger(input string, pos int) (int, int) {
   return res, len(length_str[1:len(length_str)-1])
 }
 
-func parseList(input string, pos int) {
+func parseList(input string, pos int) ([]interface{}, int) { 
+  r, _ := regexp.Compile("l[0-9]+:.*e")
+  length_str := r.FindString(input[pos:])
+  list := input[pos+1:len(length_str)]
+
+  var tokens []interface{}
+  for i := 0; i < len(list); i++ {
+    res, _ := decode(list[i:])
+    tokens = append(tokens, res)
+  }
+
+  return tokens, len(list)
 }
 
-func parseDictionary(input string, pos int) {
-  
+func parseDictionary(input string, pos int) (map[string]interface{}, int) {
+  return nil, 0
 }
 
-func tokenize(input string) []string {
-  // var tokens []string
+func decode(input string) (interface{}, int) {
+  var decoded interface{}
+  var size int
 
   for i := 0; i < len(input); i++ {
     ch := input[i]
 
     switch ch {
-      case 's':
-        parseString(input, i)
       case 'i':
-        parseInteger(input, i)
+        decoded, size = parseInteger(input, i)
+        i += size - 1
+        break
       case 'l':
-        parseList(input, i)
+        decoded, size = parseList(input, i)
+        i += size - 1
+        break
       case 'd':
-        parseDictionary(input, i)
+        decoded, size = parseDictionary(input, i)
+        i += size - 1
+        break
+      default:
+        decoded, size = parseString(input, i)
+        i += size - 1
+        break
     }
   }
-
-  return []string{}
+  return decoded, 0
 }
