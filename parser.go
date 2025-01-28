@@ -21,10 +21,9 @@ func parseString(input string, pos int) (string, int) {
 
 func parseInteger(input string, pos int) (int, int) {
   r, _ := regexp.Compile("i[-]?[0-9]+e")
-  length_str := r.FindString(input[pos + 1:])
-  length, _ := strconv.Atoi(length_str)
-  res, _ := strconv.Atoi(input[pos + 1 + length:pos + 1 + length + length])
-  return res, length
+  length_str := r.FindString(input[pos:])
+  res, _ := strconv.Atoi(length_str[1:len(length_str)-1])
+  return res, len(length_str[1:len(length_str)-1])
 }
 
 func parseList(input string, pos int) {
