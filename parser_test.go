@@ -1,6 +1,7 @@
 package main
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -37,20 +38,31 @@ func TestNegativeIntegerParser(t *testing.T) {
 }
 
 func TestEmptyListParser(t *testing.T) {
-
+	result, _ := decode("le")
+	if len(result.([]interface{})) != 0 {
+		t.Fatalf("Does not work :(, %d", len(result.([]interface{})))
+	}
 }
 
 func TestListParser(t *testing.T) {
 	var res []interface{}
 	res = append(res, "bencode")
 	res = append(res, -20)
-	// result, _ := decode("l7:bencodei-20ee")
-	// result = result.([]interface{})
+	result, _ := decode("l7:bencodei-20ee")
 
-	// if result[0] != res[0] || result[1] != res[1] {
-	// 	t.Fatalf("Does not work :(, %#v", res)
-	// }
+	if result.([]interface{})[0] != res[0] || result.([]interface{})[1] != res[1] {
+		t.Fatalf("Does not work :(, %#v", res)
+	}
 }
 
 func TestDictionaryParser(t *testing.T) {
+	result, _ := decode("d4:wiki7:bencode7:meaningi42ee")
+	expected := map[string]interface{}{
+		"wiki":    "bencode",
+		"meaning": 42,
+	}
+
+	if reflect.DeepEqual(result, expected) != true {
+		t.Fatalf("Does not work :(, %#v", result)
+	}
 }
