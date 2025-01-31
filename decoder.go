@@ -51,6 +51,9 @@ func parseDictionary(input string) (map[string]interface{}, int) {
 		}
 		key, idx := decode(input[i:])
 		val, idx2 := decode(input[i+idx:])
+		if key == "" || val == "" {
+			break
+		}
 		result[key.(string)] = val
 		i += idx + idx2
 	}
