@@ -1,5 +1,10 @@
 package main
 
+import (
+	"crypto/sha1"
+	"fmt"
+)
+
 type BitTorrent struct {
 	announce string
 	info     Info
@@ -11,6 +16,7 @@ type Info struct {
 	name        string
 	pieceLength int
 	pieces      string
+	hash        string
 }
 
 type File struct {
@@ -28,12 +34,15 @@ func ParseBitTorrentFile(content string) BitTorrent {
 
 func ParseInfoSection(content map[string]interface{}) Info {
 	info := content["info"]
+	hash := calculateInfoHash([]byte(fmt.Sprintf("%d%s%d%s", readIntValue(info, "length"),
+		readStringValue(info, "name"), readIntValue(info, "piece length"), readStringValue(info, "pieces"))))
 	return Info{
 		files:       nil,
 		length:      readIntValue(info, "length"),
 		name:        readStringValue(info, "name"),
 		pieceLength: readIntValue(info, "piece length"),
 		pieces:      readStringValue(info, "pieces"),
+		hash:        hash,
 	}
 }
 
@@ -45,4 +54,10 @@ func readStringValue(dict interface{}, key string) string {
 func readIntValue(dict interface{}, key string) int {
 	result := dict.(map[string]interface{})[key]
 	return result.(int)
+}
+
+func calculateInfoHash(input []byte) string {
+	hasher := sha1.New()
+	hasher.Write(input)
+	return fmt.Sprintf("%x", hasher.Sum(nil))
 }
