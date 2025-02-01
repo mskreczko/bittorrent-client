@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 func main() {
@@ -13,5 +14,5 @@ func main() {
 
 	content := string(b)
 	parsed := ParseBitTorrentFile(content)
-	fmt.Println(parsed)
+	GetPeersList(strings.Split(parsed.announce, "//")[1])
 }
