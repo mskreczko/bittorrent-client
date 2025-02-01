@@ -13,6 +13,11 @@ const (
 	AnnounceAction          uint32 = 1
 )
 
+type Peer struct {
+	ip   string
+	port uint64
+}
+
 func GetPeersList(url string, torrent BitTorrent) {
 	socket, err := net.ResolveUDPAddr("udp4", url)
 	if err != nil {
@@ -66,7 +71,11 @@ func announce(conn *net.UDPConn, connId uint64, info Info) uint32 {
 	binary.BigEndian.PutUint64(buf[56:64], 0)                                  // downloaded
 	binary.BigEndian.PutUint64(buf[64:72], uint64(info.length))                // left
 	binary.BigEndian.PutUint64(buf[72:80], 0)                                  // uploaded
-	binary.BigEndian.PutUint16(buf[96:], 1337)                                 // port
+	binary.BigEndian.PutUint32(buf[80:84], 0)                                  // event
+	binary.BigEndian.PutUint32(buf[84:88], 0)                                  // IP address
+	binary.BigEndian.PutUint32(buf[88:92], 0)                                  // key
+	// binary.BigEndian.PutUint32(buf[92:96], uint32(-1))                                 // num_want
+	binary.BigEndian.PutUint16(buf[96:], 6881) // port
 
 	n, err := conn.Write(buf)
 	if err != nil || n != len(buf) {
@@ -85,6 +94,18 @@ func announce(conn *net.UDPConn, connId uint64, info Info) uint32 {
 
 	if responseAction := binary.BigEndian.Uint32(buf[:4]); responseAction != AnnounceAction {
 		fmt.Printf("Response has different action: %d != %d\n", responseAction, AnnounceAction)
+	}
+
+	leechers := binary.BigEndian.Uint32(buf[12:16])
+	seeders := binary.BigEndian.Uint32(buf[16:20])
+	fmt.Println(leechers, seeders)
+
+	if len(buf) > 20 {
+		var peers []Peer
+		for i := 0; i < len(buf[20:]); i += 6 {
+			peers = append(peers, Peer{ip: string(buf[20+6*i : 24+6*i]), port: binary.BigEndian.Uint64(buf[24+6*i : 24+6*i+4])})
+		}
+		fmt.Println(peers)
 	}
 
 	return binary.BigEndian.Uint32(buf[8:12])
