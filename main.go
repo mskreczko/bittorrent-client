@@ -14,5 +14,5 @@ func main() {
 
 	content := string(b)
 	parsed := ParseBitTorrentFile(content)
-	GetPeersList(strings.Split(parsed.announce, "//")[1])
+	GetPeersList(strings.Split(parsed.announce, "//")[1], parsed)
 }

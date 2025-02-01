@@ -16,7 +16,7 @@ type Info struct {
 	name        string
 	pieceLength int
 	pieces      string
-	hash        string
+	hash        []byte
 }
 
 type File struct {
@@ -56,8 +56,8 @@ func readIntValue(dict interface{}, key string) int {
 	return result.(int)
 }
 
-func calculateInfoHash(input []byte) string {
+func calculateInfoHash(input []byte) []byte {
 	hasher := sha1.New()
 	hasher.Write(input)
-	return fmt.Sprintf("%x", hasher.Sum(nil))
+	return hasher.Sum(nil)
 }
